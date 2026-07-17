@@ -11,7 +11,7 @@
  *
  * Bump CACHE_VERSION whenever the app-shell files change to force an update.
  */
-const CACHE_VERSION = "inv-v13";
+const CACHE_VERSION = "inv-v14";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMG_CACHE = `${CACHE_VERSION}-img`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
@@ -44,6 +44,11 @@ const APP_SHELL = [
   "./icons/maskable-192.png",
   "./icons/maskable-512.png",
   "./icons/apple-touch-icon.png",
+  "./icons/icon-ver-192.png",
+  "./icons/icon-ver-512.png",
+  "./icons/maskable-ver-192.png",
+  "./icons/maskable-ver-512.png",
+  "./icons/apple-touch-icon-ver.png",
 ];
 
 self.addEventListener("install", (event) => {
