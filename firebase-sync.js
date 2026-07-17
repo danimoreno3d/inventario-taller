@@ -159,22 +159,31 @@ window.INV_SYNC = (function () {
       onStatusCb = onStatus || null;
       seedInv = seed;
       status("Conectando…");
+      // Diagnostic only (does NOT affect the connection): if no LIVE server
+      // response arrives within a few seconds, the network is almost certainly
+      // blocking Firestore — say so clearly instead of a vague "sin conexión".
+      let serverSeen = false;
+      const reachTimer = setTimeout(() => {
+        if (!serverSeen) status("Sin conexión (servidor no alcanzable)");
+      }, 9000);
       DOC.onSnapshot(async (snap) => {
         if (snap.exists && snap.data() && snap.data().cabinets) {
           const cloud = docToInv(snap.data().cabinets);
           lastRemoteJSON = stable(cloud); // reference form = what's actually stored
           firstSnap = true;
+          if (!snap.metadata.fromCache) { serverSeen = true; clearTimeout(reachTimer); }
           status(snap.metadata.fromCache ? "Sin conexión (caché)" : "Sincronizado ✓");
           const resolved = await resolvePhotos(clone(cloud));
           onRemoteCb && onRemoteCb(resolved);
         } else if (!firstSnap) {
           firstSnap = true;
+          serverSeen = true; clearTimeout(reachTimer);
           status("Creando base de datos…");
           DOC.set({ cabinets: invToDoc(seedInv), updatedAt: SV() })
             .then(() => status("Sincronizado ✓"))
-            .catch((e) => { console.warn("[sync] seed error", e); status("Error"); });
+            .catch((e) => { console.warn("[sync] seed error", e); status("Error al crear BD"); });
         }
-      }, (err) => { console.warn("[sync] snapshot error", err); status("Sin conexión"); });
+      }, (err) => { clearTimeout(reachTimer); console.warn("[sync] snapshot error", err); status("Sin conexión: " + ((err && err.code) || "error")); });
     },
 
     save(inv) {
