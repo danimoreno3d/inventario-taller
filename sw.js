@@ -11,7 +11,7 @@
  *
  * Bump CACHE_VERSION whenever the app-shell files change to force an update.
  */
-const CACHE_VERSION = "inv-v14";
+const CACHE_VERSION = "inv-v15";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMG_CACHE = `${CACHE_VERSION}-img`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
@@ -53,8 +53,11 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.open(SHELL_CACHE).then((cache) =>
+      // { cache: "reload" } forces a fresh network fetch, bypassing the HTTP
+      // cache, so a new service worker never re-caches stale app code.
+      cache.addAll(APP_SHELL.map((u) => new Request(u, { cache: "reload" })))
+    ).then(() => self.skipWaiting())
   );
 });
 
@@ -98,36 +101,34 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Images → cache-first (runtime), works offline once seen.
-  if (sameOrigin && isImage(url)) {
+  // Big, static assets (vendored React/Babel/Firebase + images) → cache-first
+  // (fast + offline). These never change without a filename/version change.
+  if (sameOrigin && (url.pathname.includes("/vendor/") || isImage(url))) {
     event.respondWith(
-      caches.open(IMG_CACHE).then(async (cache) => {
-        const hit = await cache.match(req);
+      caches.match(req).then(async (hit) => {
         if (hit) return hit;
         try {
           const res = await fetch(req);
-          if (res && res.ok) cache.put(req, res.clone());
+          if (res && res.ok) {
+            const cache = await caches.open(isImage(url) ? IMG_CACHE : SHELL_CACHE);
+            cache.put(req, res.clone());
+          }
           return res;
-        } catch (e) {
-          return hit || Response.error();
-        }
+        } catch (e) { return hit || Response.error(); }
       })
     );
     return;
   }
 
-  // Same-origin app shell → cache-first, update in background.
+  // App code (html/js/jsx/css/manifest) → NETWORK-FIRST: always fetch the latest
+  // when online so a deploy takes effect on the next load without reinstalling;
+  // the cache is only the offline fallback. This is what makes updates reliable.
   if (sameOrigin) {
     event.respondWith(
-      caches.match(req).then((hit) => {
-        const network = fetch(req).then((res) => {
-          if (res && res.ok) {
-            caches.open(SHELL_CACHE).then((c) => c.put(req, res.clone()));
-          }
-          return res;
-        }).catch(() => hit);
-        return hit || network;
-      })
+      fetch(req).then((res) => {
+        if (res && res.ok) caches.open(SHELL_CACHE).then((c) => c.put(req, res.clone())).catch(() => {});
+        return res;
+      }).catch(() => caches.match(req))
     );
     return;
   }
