@@ -35,11 +35,6 @@ window.INV_SYNC = (function () {
   try {
     firebase.initializeApp(cfg);
     db = firebase.firestore();
-    // Locked-down / corporate networks (proxies, firewalls, DPI) often break
-    // Firestore's default WebChannel streaming → the app gets stuck "offline"
-    // even though plain HTTPS works. Auto-detect and fall back to HTTP
-    // long-polling so sync works behind restrictive networks.
-    try { db.settings({ experimentalAutoDetectLongPolling: true }); } catch (e) {}
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
   } catch (e) {
     console.warn("[sync] init failed:", e);
