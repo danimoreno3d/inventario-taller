@@ -8,15 +8,18 @@
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
     body { touch-action: manipulation; overscroll-behavior: none; }
   </style>
-  <title>Inventario · Taller</title>
+  <title>Inventario · Solo ver</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- Read-only variant: no Editor, browse only. -->
+  <script>window.VIEW_ONLY = true;</script>
+
+  <!-- PWA (separate installable app from the full one) -->
+  <link rel="manifest" href="manifest-ver.webmanifest" />
   <meta name="theme-color" content="#0d0e0f" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Inventario" />
+  <meta name="apple-mobile-web-app-title" content="Inventario Ver" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png" />
 
@@ -51,11 +54,7 @@
   <script type="text/babel" src="Importer.jsx"></script>
   <script type="text/babel" src="app.jsx"></script>
 
-  <!-- Register the service worker for offline + installability, and auto-update:
-       when a newer version takes control, reload once so the installed app never
-       gets stuck on an old cached version. The controllerchange listener is only
-       attached when a controller already exists, so the very first install does
-       not trigger an extra reload. -->
+  <!-- Register the service worker for offline + installability + auto-update. -->
   <script>
     if ("serviceWorker" in navigator) {
       if (navigator.serviceWorker.controller) {

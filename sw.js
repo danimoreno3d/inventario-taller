@@ -11,7 +11,7 @@
  *
  * Bump CACHE_VERSION whenever the app-shell files change to force an update.
  */
-const CACHE_VERSION = "inv-v8";
+const CACHE_VERSION = "inv-v9";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMG_CACHE = `${CACHE_VERSION}-img`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
@@ -19,7 +19,10 @@ const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./ver.html",
   "./styles.css",
+  "./app-custom.css",
+  "./manifest-ver.webmanifest",
   "./tweaks-panel.jsx",
   "./data.jsx",
   "./Cabinet.jsx",

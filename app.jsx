@@ -486,7 +486,11 @@ function App() {
   const [highlightedItemId, setHighlightedItemId] = useState(null);
   const [scanningCabinetId, setScanningCabinetId] = useState(null);
 
-  const editorMode = t.mode === "editor";
+  // Read-only variant: ver.html sets window.VIEW_ONLY (or append ?ver to the URL).
+  // In this mode the Editor is never available — the app can only be browsed.
+  const VIEW_ONLY = typeof window !== "undefined" &&
+    (window.VIEW_ONLY === true || new URLSearchParams(window.location.search).has("ver"));
+  const editorMode = !VIEW_ONLY && t.mode === "editor";
 
   // Build a flat list of all items once, indexed for fuzzy search
   const flatIndex = useMemo(() => {
@@ -635,6 +639,38 @@ function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [modalItem, openCabinet, search, themeOpen, importOpen]);
 
+  // ── Hardware/browser Back button (Android gesture, etc.) ──────────
+  // When a layer is open (open cabinet, item modal, theme, importer), Back should
+  // close the topmost layer — the same as "Volver al taller" — instead of leaving
+  // the app. We trap the history: arm one entry while a layer is open, and on Back
+  // close the topmost layer (re-arming while other layers remain open).
+  const overlayOpen = !!(modalItem || openCabinet || themeOpen || importOpen);
+  const overlayStateRef = useRef({});
+  overlayStateRef.current = { modalItem, openCabinet, themeOpen, importOpen };
+  useEffect(() => {
+    if (!overlayOpen) return;
+    history.pushState({ invTrap: true }, "");
+    let closedByBack = false;
+    const onPop = () => {
+      const s = overlayStateRef.current;
+      const openCount =
+        (s.importOpen ? 1 : 0) + (s.themeOpen ? 1 : 0) +
+        (s.modalItem ? 1 : 0) + (s.openCabinet ? 1 : 0);
+      if (s.importOpen) setImportOpen(false);
+      else if (s.themeOpen) setThemeOpen(false);
+      else if (s.modalItem) setModalItem(null);
+      else if (s.openCabinet) closeCabinet();
+      if (openCount > 1) history.pushState({ invTrap: true }, ""); // more layers remain
+      else closedByBack = true;
+    };
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      // Closed via UI/Escape (not Back) → remove the trap so it doesn't linger.
+      if (!closedByBack && history.state && history.state.invTrap) history.back();
+    };
+  }, [overlayOpen]);
+
   const cabinetIds = Object.keys(inventory);
 
   return (
@@ -735,20 +771,26 @@ function App() {
             </>
           )}
 
-          <div className="mode-toggle">
-            <button
-              className={t.mode === "view" ? "active" : ""}
-              onClick={() => setTweak("mode", "view")}
-            >
-              Visualizar
-            </button>
-            <button
-              className={t.mode === "editor" ? "active editor" : ""}
-              onClick={() => setTweak("mode", "editor")}
-            >
-              Editor
-            </button>
-          </div>
+          {VIEW_ONLY ? (
+            <span className="view-only-badge" title="Modo solo lectura — no se puede editar">
+              👁 Solo ver
+            </span>
+          ) : (
+            <div className="mode-toggle">
+              <button
+                className={t.mode === "view" ? "active" : ""}
+                onClick={() => setTweak("mode", "view")}
+              >
+                Visualizar
+              </button>
+              <button
+                className={t.mode === "editor" ? "active editor" : ""}
+                onClick={() => setTweak("mode", "editor")}
+              >
+                Editor
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

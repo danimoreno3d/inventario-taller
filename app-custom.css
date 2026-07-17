@@ -1,0 +1,63 @@
+/* app-custom.css — my additions on top of the design's styles.css.
+   Kept in a SEPARATE file so re-syncing the design (which overwrites styles.css)
+   never wipes these. Loaded after styles.css so it wins where it overlaps. */
+
+/* ── Camera + gallery buttons over the item photo (mobile-first) ── */
+.modal-photo-actions {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+}
+.modal-photo-actions .modal-photo-upload {
+  position: static;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+.modal-photo-upload.secondary {
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: 1px solid var(--line-strong);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.modal-photo-upload.secondary:hover { background: rgba(0, 0, 0, 0.7); }
+.modal-photo-upload:disabled { opacity: 0.6; cursor: default; }
+
+/* ── Cloud-sync status badge in the topbar ── */
+.sync-badge {
+  align-self: center;
+  margin-left: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  white-space: nowrap;
+  border: 1px solid var(--line-strong);
+  color: var(--txt-2);
+  background: rgba(255,255,255,0.03);
+}
+.sync-badge.ok { color: #4ecb6e; border-color: rgba(78,203,110,0.35); }
+.sync-badge.busy { color: var(--warning); border-color: rgba(212,166,74,0.35); }
+.sync-badge.err { color: #e5674a; border-color: rgba(229,103,74,0.4); }
+
+/* ── Read-only variant badge (ver.html) ── */
+.view-only-badge {
+  align-self: center;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--txt-2);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line-strong);
+}
