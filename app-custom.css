@@ -101,7 +101,7 @@
   .topbar { z-index: 65; }
   .cab-wrap.is-open {
     z-index: 60 !important;
-    top: calc(var(--topbar-h, 150px) - 1px);
+    top: calc(var(--topbar-h, 150px) - 6px);  /* metido 6px bajo la barra opaca (z65) → sin rendija */
     height: auto;
     bottom: 0;
   }

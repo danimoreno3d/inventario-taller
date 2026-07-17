@@ -364,8 +364,10 @@ function App() {
     const tb = document.querySelector(".topbar");
     if (!tb) return;
     const setH = () =>
-      document.documentElement.style.setProperty("--topbar-h", tb.getBoundingClientRect().height + "px");
+      document.documentElement.style.setProperty("--topbar-h", tb.offsetHeight + "px");
     setH();
+    // Re-medir al cargar la fuente web (el texto puede cambiar el alto de la barra).
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(setH);
     let ro;
     if ("ResizeObserver" in window) { ro = new ResizeObserver(setH); ro.observe(tb); }
     window.addEventListener("resize", setH);
