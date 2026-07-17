@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <style>
+    /* App-like feel: no pinch-zoom, no double-tap zoom, no text auto-inflation. */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
+    body { touch-action: manipulation; overscroll-behavior: none; }
+  </style>
+  <title>Inventario · Taller</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0d0e0f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Inventario" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- React + Babel vendored locally so the app boots offline (no CDN needed). -->
+  <script src="vendor/react.production.min.js"></script>
+  <script src="vendor/react-dom.production.min.js"></script>
+  <script src="vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Cloud sync (Firebase, vendored for offline). Must load before app.jsx so
+       window.INV_SYNC exists. Plain scripts run before the Babel-transpiled ones. -->
+  <script src="vendor/firebase-app-compat.js"></script>
+  <script src="vendor/firebase-firestore-compat.js"></script>
+  <script src="vendor/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-sync.js"></script>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="Cabinet.jsx"></script>
+  <script type="text/babel" src="ItemModal.jsx"></script>
+  <script type="text/babel" src="ThemeEditor.jsx"></script>
+  <script type="text/babel" src="Importer.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+
+  <!-- Register the service worker for offline + installability, and auto-update:
+       when a newer version takes control, reload once so the installed app never
+       gets stuck on an old cached version. The controllerchange listener is only
+       attached when a controller already exists, so the very first install does
+       not trigger an extra reload. -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      if (navigator.serviceWorker.controller) {
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+      }
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js")
+          .then((reg) => { reg.update(); })
+          .catch((err) => { console.warn("SW registro falló:", err); });
+      });
+    }
+  </script>
+</body>
+</html>
