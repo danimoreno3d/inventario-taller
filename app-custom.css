@@ -67,6 +67,19 @@
      up/down. Uses overflow-x:clip (not hidden) so it never turns into a nested
      vertical scroller and never breaks the page's own vertical scroll. */
   #root, .app, .stage, .cabinet-row { max-width: 100vw; overflow-x: clip; }
+
+  /* "Volver al taller": anclarlo a la PANTALLA (fixed), no a la página.
+     Como .back-bar era position:absolute colgando de .app (que mide toda la
+     página scrolleable), su "abajo" caía en un punto distinto según el scroll →
+     en unos armarios salía abajo y en otros a media pantalla. Con position:fixed
+     queda SIEMPRE pegado al borde inferior de la pantalla, igual en todos los
+     armarios, y más ajustado al borde. */
+  .back-bar {
+    position: fixed;
+    top: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+    padding: 11px 22px;
+  }
 }
 
 /* ── Read-only variant badge (ver.html) ── */
