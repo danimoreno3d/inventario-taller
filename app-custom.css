@@ -80,6 +80,23 @@
     bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
     padding: 11px 22px;
   }
+
+  /* Armario abierto: que sea un overlay a pantalla completa DE VERDAD.
+     Bug: .cab-wrap.is-open es position:fixed, pero .cabinet-row lleva
+     transform-style:preserve-3d (para el 3D de escritorio, inútil en móvil donde
+     la perspectiva es none) y eso ATRAPA el fixed → lo ancla a .cabinet-row en
+     vez de al viewport. Al abrir un armario con el menú scrolleado, el interior
+     salía "desfijado" y desplazado hacia arriba (detrás de la barra superior).
+       · transform-style:flat  → el fixed vuelve a ser relativo a la pantalla
+         (queda clavado en top:0, sin depender del scroll del menú).
+       · z-index:auto en la fila cuando hay uno abierto → deja de encajonar el
+         overlay por debajo de la barra superior.
+       · z-index:60 !important en el armario → pisa el z-index inline (=5) que
+         React pone para su animación; 60 cubre la barra (20) pero queda por
+         debajo del botón "Volver al taller" (70), que sigue visible y clicable. */
+  .cabinet-row { transform-style: flat; }
+  .cabinet-row.has-open { z-index: auto; }
+  .cab-wrap.is-open { z-index: 60 !important; }
 }
 
 /* ── Read-only variant badge (ver.html) ── */
