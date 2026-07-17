@@ -170,13 +170,19 @@ window.INV_SYNC = (function () {
       const reachTimer = setTimeout(() => {
         if (!serverSeen) status("Sin conexión (servidor no alcanzable)");
       }, 9000);
-      DOC.onSnapshot(async (snap) => {
+      // includeMetadataChanges:true is REQUIRED — otherwise, when the doc is
+      // already in the offline cache, Firestore delivers the cache snapshot but
+      // SUPPRESSES the server's confirmation (a metadata-only change), so we'd
+      // never learn we're actually connected and would wrongly show "offline".
+      DOC.onSnapshot({ includeMetadataChanges: true }, async (snap) => {
         if (snap.exists && snap.data() && snap.data().cabinets) {
           const cloud = docToInv(snap.data().cabinets);
           lastRemoteJSON = stable(cloud); // reference form = what's actually stored
           firstSnap = true;
           if (!snap.metadata.fromCache) { serverSeen = true; clearTimeout(reachTimer); }
-          status(snap.metadata.fromCache ? "Sin conexión (caché)" : "Sincronizado ✓");
+          // Latch green: once the server has confirmed, never downgrade the badge
+          // on a later transient cache snapshot.
+          status(serverSeen ? "Sincronizado ✓" : "Sin conexión (caché)");
           const resolved = await resolvePhotos(clone(cloud));
           onRemoteCb && onRemoteCb(resolved);
         } else if (!firstSnap) {

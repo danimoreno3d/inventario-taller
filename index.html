@@ -51,29 +51,16 @@
   <script type="text/babel" src="Importer.jsx"></script>
   <script type="text/babel" src="app.jsx"></script>
 
-  <!-- Register the service worker for offline + installability, and auto-update:
-       when a newer version takes control, reload once so the installed app never
-       gets stuck on an old cached version. The controllerchange listener is only
-       attached when a controller already exists, so the very first install does
-       not trigger an extra reload. -->
+  <!-- No service worker any more: a caching worker kept installed apps stuck on
+       stale code (and hid fixes behind a false "sin conexión"). The app now always
+       loads fresh from the network — like a normal browser tab. We only nudge any
+       still-registered OLD worker to fetch the self-removing sw.js so it purges its
+       caches and unregisters; we do NOT register a new caching worker. -->
   <script>
     if ("serviceWorker" in navigator) {
-      if (navigator.serviceWorker.controller) {
-        let reloaded = false;
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          if (reloaded) return;
-          reloaded = true;
-          window.location.reload();
-        });
-      }
-      window.addEventListener("load", () => {
-        // updateViaCache:"none" → the browser always fetches sw.js fresh when
-        // checking for updates (never from the HTTP cache), so a new version is
-        // picked up immediately instead of getting stuck on an old worker.
-        navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
-          .then((reg) => { reg.update(); })
-          .catch((err) => { console.warn("SW registro falló:", err); });
-      });
+      navigator.serviceWorker.getRegistrations()
+        .then((regs) => regs.forEach((r) => r.update()))
+        .catch(() => {});
     }
   </script>
 </body>

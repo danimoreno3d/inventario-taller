@@ -54,22 +54,12 @@
   <script type="text/babel" src="Importer.jsx"></script>
   <script type="text/babel" src="app.jsx"></script>
 
-  <!-- Register the service worker for offline + installability + auto-update. -->
+  <!-- No service worker (see index.html). Only nudge any old worker to self-remove. -->
   <script>
     if ("serviceWorker" in navigator) {
-      if (navigator.serviceWorker.controller) {
-        let reloaded = false;
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          if (reloaded) return;
-          reloaded = true;
-          window.location.reload();
-        });
-      }
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
-          .then((reg) => { reg.update(); })
-          .catch((err) => { console.warn("SW registro falló:", err); });
-      });
+      navigator.serviceWorker.getRegistrations()
+        .then((regs) => regs.forEach((r) => r.update()))
+        .catch(() => {});
     }
   </script>
 </body>
