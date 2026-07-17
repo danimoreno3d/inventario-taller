@@ -81,22 +81,30 @@
     padding: 11px 22px;
   }
 
-  /* Armario abierto: que sea un overlay a pantalla completa DE VERDAD.
-     Bug: .cab-wrap.is-open es position:fixed, pero .cabinet-row lleva
+  /* Armario abierto: overlay fijo JUSTO DEBAJO de la barra de búsqueda (que se
+     queda visible arriba), sin desplazarse con el scroll del menú.
+     Bug de raíz: .cab-wrap.is-open es position:fixed, pero .cabinet-row lleva
      transform-style:preserve-3d (para el 3D de escritorio, inútil en móvil donde
-     la perspectiva es none) y eso ATRAPA el fixed → lo ancla a .cabinet-row en
-     vez de al viewport. Al abrir un armario con el menú scrolleado, el interior
-     salía "desfijado" y desplazado hacia arriba (detrás de la barra superior).
-       · transform-style:flat  → el fixed vuelve a ser relativo a la pantalla
-         (queda clavado en top:0, sin depender del scroll del menú).
+     la perspectiva es none) y eso ESTABLECE UN CONTAINING BLOCK para descendientes
+     fixed → el overlay se anclaba a .cabinet-row (no al viewport) y con el menú
+     scrolleado salía "desfijado" y desplazado hacia arriba.
+       · transform-style:flat  → el fixed vuelve a ser relativo a la PANTALLA.
        · z-index:auto en la fila cuando hay uno abierto → deja de encajonar el
-         overlay por debajo de la barra superior.
-       · z-index:60 !important en el armario → pisa el z-index inline (=5) que
-         React pone para su animación; 60 cubre la barra (20) pero queda por
-         debajo del botón "Volver al taller" (70), que sigue visible y clicable. */
+         overlay dentro del stacking context de .cabinet-row.
+       · top:var(--topbar-h) → el armario empieza justo bajo la barra (la altura
+         real la mide app.jsx); height:auto + bottom:0 → rellena hasta abajo.
+       · z-index:60 pisa el z-index inline (=5) que React pone para su animación;
+         la barra sube a 65 para tapar limpio el empalme de 1px, y el botón
+         "Volver al taller" (70) y el modal (1000) quedan por encima. */
   .cabinet-row { transform-style: flat; }
   .cabinet-row.has-open { z-index: auto; }
-  .cab-wrap.is-open { z-index: 60 !important; }
+  .topbar { z-index: 65; }
+  .cab-wrap.is-open {
+    z-index: 60 !important;
+    top: calc(var(--topbar-h, 150px) - 1px);
+    height: auto;
+    bottom: 0;
+  }
 }
 
 /* ── Read-only variant badge (ver.html) ── */

@@ -355,6 +355,23 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
+  // ── Exponer la altura real de la barra superior como --topbar-h ──
+  // En móvil el armario abierto es un overlay fijo que debe empezar JUSTO debajo
+  // de la barra de búsqueda (sin taparla ni dejar hueco). La barra cambia de alto
+  // según el ancho (el buscador y los botones se reajustan), así que la medimos y
+  // la actualizamos si cambia. El CSS usa var(--topbar-h) para colocar el overlay.
+  useEffect(() => {
+    const tb = document.querySelector(".topbar");
+    if (!tb) return;
+    const setH = () =>
+      document.documentElement.style.setProperty("--topbar-h", tb.getBoundingClientRect().height + "px");
+    setH();
+    let ro;
+    if ("ResizeObserver" in window) { ro = new ResizeObserver(setH); ro.observe(tb); }
+    window.addEventListener("resize", setH);
+    return () => { window.removeEventListener("resize", setH); if (ro) ro.disconnect(); };
+  }, []);
+
   // ── Colors (theme) — persisted to localStorage ──────────
   const [colors, setColorsState] = useState(() => {
     try {
