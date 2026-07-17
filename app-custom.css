@@ -49,6 +49,16 @@
 .sync-badge.busy { color: var(--warning); border-color: rgba(212,166,74,0.35); }
 .sync-badge.err { color: #e5674a; border-color: rgba(229,103,74,0.4); }
 
+/* ── Mobile: let the whole page scroll to reach every cabinet ──
+   The design's mobile layout grows .app/.stage (overflow:visible) and expects
+   the DOCUMENT to scroll, but the base `body{overflow:hidden}` + `height:100%`
+   (needed for the desktop 3D stage) blocked it → couldn't scroll to the lower
+   cabinets. Re-enable document scroll on phones. */
+@media (max-width: 768px) {
+  html, body, #root { height: auto; min-height: 100%; overflow: visible; }
+  body { overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+}
+
 /* ── Read-only variant badge (ver.html) ── */
 .view-only-badge {
   align-self: center;
