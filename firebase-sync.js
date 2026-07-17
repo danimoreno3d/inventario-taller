@@ -35,6 +35,10 @@ window.INV_SYNC = (function () {
   try {
     firebase.initializeApp(cfg);
     db = firebase.firestore();
+    // Work/school networks (e.g. ELISAVA) commonly break Firestore's default
+    // WebChannel streaming → "servidor no alcanzable" even though plain HTTPS
+    // works. FORCE HTTP long-polling, which goes through such proxies/firewalls.
+    try { db.settings({ experimentalForceLongPolling: true }); } catch (e) {}
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
   } catch (e) {
     console.warn("[sync] init failed:", e);
