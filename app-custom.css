@@ -56,7 +56,17 @@
    cabinets. Re-enable document scroll on phones. */
 @media (max-width: 768px) {
   html, body, #root { height: auto; min-height: 100%; overflow: visible; }
-  body { overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+  body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;          /* touch gestures: vertical only */
+    overscroll-behavior: none;    /* no bounce / scroll chaining */
+  }
+  /* LOCK horizontal scroll: clip any horizontal overflow at the app containers so
+     nothing is wider than the screen → no left/right or diagonal scroll, only
+     up/down. Uses overflow-x:clip (not hidden) so it never turns into a nested
+     vertical scroller and never breaks the page's own vertical scroll. */
+  #root, .app, .stage, .cabinet-row { max-width: 100vw; overflow-x: clip; }
 }
 
 /* ── Read-only variant badge (ver.html) ── */
