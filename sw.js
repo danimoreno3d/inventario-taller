@@ -11,7 +11,7 @@
  *
  * Bump CACHE_VERSION whenever the app-shell files change to force an update.
  */
-const CACHE_VERSION = "inv-v16";
+const CACHE_VERSION = "inv-v17";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMG_CACHE = `${CACHE_VERSION}-img`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;

@@ -67,7 +67,10 @@
         });
       }
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js")
+        // updateViaCache:"none" → the browser always fetches sw.js fresh when
+        // checking for updates (never from the HTTP cache), so a new version is
+        // picked up immediately instead of getting stuck on an old worker.
+        navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
           .then((reg) => { reg.update(); })
           .catch((err) => { console.warn("SW registro falló:", err); });
       });
